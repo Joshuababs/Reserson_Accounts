@@ -23,8 +23,8 @@ test.describe("arriving from a product", () => {
     await page.waitForURL(/localhost:8097\/signin\?next=/, { timeout: 20_000 });
     expect(decodeURIComponent(page.url())).toContain(`${CONSOLE}/dashboard`);
 
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     // Back in the console, signed in, without ever seeing a console login screen.
@@ -36,8 +36,8 @@ test.describe("arriving from a product", () => {
     const { email } = await seedAccount({ product: "operator" });
 
     await page.goto("/signin");
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL((url) => url.origin === new URL(CONSOLE).origin, { timeout: 20_000 });
 

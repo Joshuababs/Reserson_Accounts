@@ -31,7 +31,16 @@ picker renders from the registry.
 ```
 /signup  →  /verify  →  /products  →  /business?product=…  →  the product's app
 /signin  →  wherever they were going, or their primary product
+/forgot  →  /reset   →  /signin
 ```
+
+The screens are the merchant dashboard's auth screens (`Reservon_Merchant_Dashboard/
+src/pages/auth/v2` and its `signupLayout.vue`), ported one for one — same layout,
+copy, colours, fonts, favicon, toasts and popups — so a customer who has been
+signing in on app.reservonhq.com sees nothing new here. The one difference is the
+step list down the rail: it names this app's steps (account, verify, product,
+business) rather than the merchant app's (which continue with modules and payment
+after the handoff).
 
 Every screen after sign-in reads the account from the **session cookie**, scoped to
 `.reservonhq.com`, so a customer already signed in on another product arrives here

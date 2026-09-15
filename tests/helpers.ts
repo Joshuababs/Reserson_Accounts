@@ -74,3 +74,37 @@ export async function seedAccount(options: { product?: string } = {}): Promise<{
 
   return { email, token, businessId };
 }
+
+/**
+ * The screens, as the merchant dashboard draws them.
+ *
+ * Every spec walks the same three forms, so the labels live here once: a copy
+ * change on a screen is then one edit rather than four.
+ */
+import type { Page } from "@playwright/test";
+
+export async function fillSignUp(page: Page, input: { firstName: string; lastName: string; email: string }) {
+  await page.getByLabel("First name").fill(input.firstName);
+  await page.getByLabel("Last name").fill(input.lastName);
+  await page.getByLabel("Email", { exact: true }).fill(input.email);
+  await page.getByLabel("Create a password", { exact: true }).fill(PASSWORD);
+  await page.getByLabel("Confirm password", { exact: true }).fill(PASSWORD);
+  await page.getByLabel(/I agree to Reservon's/).check();
+  await page.getByRole("button", { name: "Continue" }).click();
+}
+
+/** Types the six digits into the six boxes; focus advances on its own. */
+export async function enterVerificationCode(page: Page, code: string) {
+  const boxes = page.getByRole("group", { name: "Verification code" }).getByRole("textbox");
+  await boxes.first().pressSequentially(code);
+  await page.getByRole("button", { name: "Verify & continue" }).click();
+}
+
+export async function fillBusiness(page: Page, businessName: string) {
+  await page.getByLabel("Business name").fill(businessName);
+  await page.getByLabel("Industry").selectOption("Consulting / Coaching");
+  await page.getByLabel("Country of business registration").selectOption("IE");
+  await page.getByLabel("Phone number").fill("899508939");
+  await page.getByLabel("Address").fill("1 Main Street, Dublin");
+  await page.getByRole("button", { name: "Continue" }).click();
+}

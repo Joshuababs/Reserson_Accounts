@@ -12,8 +12,8 @@ test.describe("signing in", () => {
     const deepLink = `${CONSOLE}/bookings?tab=today`;
     await page.goto(`/signin?next=${encodeURIComponent(deepLink)}`);
 
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await page.waitForURL((url) => url.origin === new URL(CONSOLE).origin, { timeout: 15_000 });
@@ -24,8 +24,8 @@ test.describe("signing in", () => {
     const { email } = await seedAccount({ product: "operator" });
 
     await page.goto("/signin");
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     // The operator console is this account's primary product, so that is where
@@ -37,8 +37,8 @@ test.describe("signing in", () => {
     const { email } = await seedAccount({ product: "operator" });
 
     await page.goto(`/signin?next=${encodeURIComponent("https://phishing.example/login")}`);
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await page.waitForURL((url) => url.hostname !== "localhost" || !url.pathname.startsWith("/signin"), {
@@ -51,8 +51,8 @@ test.describe("signing in", () => {
     const { email } = await seedAccount();
 
     await page.goto("/signin");
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill("not-the-right-password");
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill("not-the-right-password");
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(page.getByRole("alert")).toBeVisible();
@@ -63,8 +63,8 @@ test.describe("signing in", () => {
     const { email } = await seedAccount({ product: "operator" });
 
     await page.goto("/signin");
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL((url) => url.origin === new URL(CONSOLE).origin, { timeout: 15_000 });
 

@@ -1,165 +1,29 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * The merchant dashboard's theme, verbatim.
+ *
+ * This app is the sign-in surface for that product, so it uses the same palette and
+ * type the customer already knows from app.reservonhq.com — not a token system of
+ * its own. Values are copied from Reservon_Merchant_Dashboard/tailwind.config.js.
+ */
 export default {
-  darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
-  prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: { "2xl": "1400px" },
-    },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-          25: "hsl(var(--primary-25))",
-          50: "hsl(var(--primary-50))",
-          100: "hsl(var(--primary-100))",
-          200: "hsl(var(--primary-200))",
-          300: "hsl(var(--primary-300))",
-          400: "hsl(var(--primary-400))",
-          500: "hsl(var(--primary-500))",
-          600: "hsl(var(--primary-600))",
-          700: "hsl(var(--primary-700))",
-          800: "hsl(var(--primary-800))",
-          900: "hsl(var(--primary-900))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-          25: "hsl(var(--secondary-25))",
-          50: "hsl(var(--secondary-50))",
-          100: "hsl(var(--secondary-100))",
-          200: "hsl(var(--secondary-200))",
-          500: "hsl(var(--secondary-500))",
-        },
-        tertiary: {
-          400: "hsl(var(--tertiary-400))",
-          500: "hsl(var(--tertiary-500))",
-          600: "hsl(var(--tertiary-600))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        sidebar: {
-          bg: "hsl(var(--sidebar-bg))",
-          foreground: "hsl(var(--sidebar-fg))",
-          muted: "hsl(var(--sidebar-muted))",
-          active: "hsl(var(--sidebar-active))",
-          hover: "hsl(var(--sidebar-hover))",
-        },
-        grey: {
-          25: "hsl(var(--grey-25))",
-          50: "hsl(var(--grey-50))",
-          100: "hsl(var(--grey-100))",
-          200: "hsl(var(--grey-200))",
-          300: "hsl(var(--grey-300))",
-          400: "hsl(var(--grey-400))",
-          500: "hsl(var(--grey-500))",
-          600: "hsl(var(--grey-600))",
-          700: "hsl(var(--grey-700))",
-          800: "hsl(var(--grey-800))",
-          900: "hsl(var(--grey-900))",
-        },
-        success: { 50: "hsl(var(--success-50))", 500: "hsl(var(--success-500))" },
-        warning: { 50: "hsl(var(--warning-50))", 500: "hsl(var(--warning-500))" },
-        error: { 50: "hsl(var(--error-50))", 500: "hsl(var(--error-500))" },
-        // Semantic alias for error — reads better at call sites than error-500.
-        danger: {
-          DEFAULT: "hsl(var(--error-500))",
-          foreground: "hsl(var(--primary-foreground))",
-          50: "hsl(var(--error-50))",
-        },
-        info: { 50: "hsl(var(--info-50))", 500: "hsl(var(--info-500))" },
-        chart: {
-          primary: "hsl(var(--chart-primary))",
-          secondary: "hsl(var(--chart-secondary))",
-        },
+        primary: "#4237C9",
+        secondary: "#F4B402",
+        black: "#131315",
+        gray: "#757480",
+        black2: "#04111D",
+        danger: "#D3351D",
       },
       fontFamily: {
-        heading: ["Gabarito", "sans-serif"],
-        mono: ["Roboto Mono", "ui-monospace", "monospace"],
-        body: ["Roboto", "sans-serif"],
-      },
-      fontSize: {
-        "heading-1": ["4rem", { lineHeight: "1.1", fontWeight: "700" }],
-        "heading-2": ["3.25rem", { lineHeight: "1.15", fontWeight: "600" }],
-        "heading-3": ["2.5rem", { lineHeight: "1.2", fontWeight: "600" }],
-        "heading-4": ["2rem", { lineHeight: "1.25", fontWeight: "600" }],
-        "heading-5": ["1.75rem", { lineHeight: "1.3", fontWeight: "500" }],
-        "heading-6": ["1.5rem", { lineHeight: "1.35", fontWeight: "500" }],
-        "display-sm": ["1.25rem", { lineHeight: "1.4", fontWeight: "500" }],
-        "body-xlg": ["1.25rem", { lineHeight: "1.6", fontWeight: "400" }],
-        "body-lg": ["1.125rem", { lineHeight: "1.6", fontWeight: "400" }],
-        "body-base": ["1rem", { lineHeight: "1.6", fontWeight: "400" }],
-        "body-sm": ["0.875rem", { lineHeight: "1.5", fontWeight: "400" }],
-        "body-xsm": ["0.75rem", { lineHeight: "1.5", fontWeight: "400" }],
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "calc(var(--radius) + 4px)",
-        "2xl": "calc(var(--radius) + 8px)",
-      },
-      boxShadow: {
-        card: "0 1px 2px 0 hsl(var(--grey-1000) / 0.04), 0 1px 3px 0 hsl(var(--grey-1000) / 0.05)",
-        "card-hover":
-          "0 2px 4px -2px hsl(var(--grey-1000) / 0.06), 0 8px 20px -8px hsl(var(--grey-1000) / 0.12)",
-        lift: "0 4px 8px -4px hsl(var(--grey-1000) / 0.07), 0 20px 44px -20px hsl(var(--grey-1000) / 0.18)",
-        sidebar: "4px 0 10px -2px hsl(var(--grey-1000) / 0.10)",
-      },
-      keyframes: {
-        "fade-in": {
-          from: { opacity: "0", transform: "translateY(10px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        "slide-in-left": {
-          from: { opacity: "0", transform: "translateX(-20px)" },
-          to: { opacity: "1", transform: "translateX(0)" },
-        },
-        "scale-in": {
-          from: { opacity: "0", transform: "scale(0.95)" },
-          to: { opacity: "1", transform: "scale(1)" },
-        },
-        "pulse-ring": {
-          "0%": { boxShadow: "0 0 0 0 hsl(var(--error-500) / 0.5)" },
-          "70%": { boxShadow: "0 0 0 8px hsl(var(--error-500) / 0)" },
-          "100%": { boxShadow: "0 0 0 0 hsl(var(--error-500) / 0)" },
-        },
-      },
-      animation: {
-        "fade-in": "fade-in 0.3s ease-out",
-        "slide-in-left": "slide-in-left 0.3s ease-out",
-        "scale-in": "scale-in 0.2s ease-out",
-        "pulse-ring": "pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        outfit: ["Outfit", "sans-serif"],
+        gabarito: ["Gabarito", "sans-serif"],
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 } satisfies Config;

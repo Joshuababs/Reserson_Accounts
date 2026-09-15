@@ -1,31 +1,34 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
-import { api, ApiError } from "@/api";
-import { Shell } from "@/components/Shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { api } from "@/api";
+import { AuthLayout } from "@/components/AuthLayout";
+import { PasswordInput } from "@/components/PasswordInput";
+import { Spinner } from "@/components/Spinner";
+import { errorMessage, useNotifications } from "@/components/notifications";
 import { useSession } from "@/session";
 import { continueTo, withNext } from "@/lib/handoff";
+import { useTitle } from "@/lib/title";
 
+/** The merchant dashboard's /auth/v2/login, on the account layer's sign-in flow. */
 export default function SignIn() {
+  useTitle("Log in");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { setToken, refresh } = useSession();
+  const { toast } = useNotifications();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const submit = async (event: React.FormEvent) => {
+  const enableButton = !!(password.length && email.trim());
+
+  const loginUser = async (event: React.FormEvent) => {
     event.preventDefault();
-    setBusy(true);
-    setError(null);
+    setLoading(true);
 
     try {
-      const result = await api.signIn(email.trim(), password);
+      const result = await api.signIn(email.trim(), password.trim());
       setToken(result.access_token);
       const me = await refresh();
 
@@ -34,67 +37,68 @@ export default function SignIn() {
       // product picker they didn't ask for.
       continueTo({ next: params.get("next"), me: me ?? result.me }, navigate);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "We couldn't sign you in. Please try again.");
-      setBusy(false);
+      toast({ type: "ERROR", msg: errorMessage(err), duration: 10000 });
+      setLoading(false);
     }
   };
 
   return (
-    <Shell
-      title="Sign in"
-      standfirst="One account for every Reservon product."
-      footer={
-        <>
-          New here?{" "}
-          <Link to={withNext("/signup", params.get("next"))} className="text-primary underline underline-offset-4">
+    <AuthLayout type="others">
+      <div className="flex flex-col gap-6 w-full max-w-[420px]">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-[22px] md:text-3xl font-bold font-gabarito">Welcome back</h3>
+          <p className="text-sm text-gray">Log in to manage your bookings, invoices and payments.</p>
+        </div>
+
+        <form className="flex flex-col gap-4" onSubmit={loginUser}>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="label">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@business.com"
+              className="input-field"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-4">
+              <label htmlFor="password" className="label">
+                Password
+              </label>
+              <Link to="/forgot" className="text-sm font-medium text-primary">
+                Forgot password?
+              </Link>
+            </div>
+            <PasswordInput
+              id="password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" disabled={!enableButton || loading} className="btn-primary mt-2 center gap-2">
+            {loading && <Spinner size={16} color="#ffffff" />}
+            {loading ? "Signing in" : "Sign in"}
+          </button>
+        </form>
+
+        <p className="text-sm text-gray text-center">
+          New to Reservon?{" "}
+          <Link to={withNext("/signup", params.get("next"), params.get("product"))} className="text-primary font-medium">
             Create an account
           </Link>
-        </>
-      }
-    >
-      <form onSubmit={submit} className="space-y-5">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1.5"
-          />
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link to="/forgot" className="text-xs text-muted-foreground underline underline-offset-4">
-              Forgotten it?
-            </Link>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mt-1.5"
-          />
-        </div>
-
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-
-        <Button type="submit" className="w-full" disabled={busy}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Sign in
-        </Button>
-      </form>
-    </Shell>
+        </p>
+      </div>
+    </AuthLayout>
   );
 }

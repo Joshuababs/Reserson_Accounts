@@ -1,49 +1,75 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "@/api";
-import { Shell } from "@/components/Shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AuthLayout } from "@/components/AuthLayout";
+import { Spinner } from "@/components/Spinner";
+import { errorMessage, useNotifications } from "@/components/notifications";
+import { useTitle } from "@/lib/title";
 
+/** The merchant dashboard's /auth/v2/forgot. A code goes out; the next screen takes it. */
 export default function Forgot() {
-  const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
+  useTitle("Forgot password");
+  const navigate = useNavigate();
+  const { toast } = useNotifications();
 
-  const submit = async (event: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const forgotPassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    setBusy(true);
-    // Always reports success, whatever happened: whether an address has an account
-    // is not something an unauthenticated form should confirm.
-    await api.forgotPassword(email.trim()).catch(() => undefined);
-    setSent(true);
-    setBusy(false);
+    setLoading(true);
+
+    try {
+      // The API answers the same way whether or not the address has an account, so
+      // this screen never confirms one exists.
+      const { message } = await api.forgotPassword(email.trim());
+      toast({ type: "SUCCESS", msg: message || "Password reset link has been sent to your email.", duration: 10000 });
+      setEmail("");
+      navigate("/reset");
+    } catch (err) {
+      toast({ type: "ERROR", msg: errorMessage(err), duration: 10000 });
+      setLoading(false);
+    }
   };
 
-  if (sent) {
-    return (
-      <Shell title="Check your email" standfirst={`If ${email} has a Reservon account, a reset link is on its way.`}>
-        <Button asChild variant="secondary" className="w-full">
-          <Link to="/signin">Back to sign in</Link>
-        </Button>
-      </Shell>
-    );
-  }
-
   return (
-    <Shell title="Reset your password" standfirst="We'll email you a link.">
-      <form onSubmit={submit} className="space-y-5">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className="mt-1.5" />
+    <AuthLayout type="others">
+      <div className="flex flex-col gap-6 w-full max-w-[420px]">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-[22px] md:text-3xl font-bold font-gabarito">Forgot password</h3>
+          <p className="text-sm text-gray">Provide the email attached to this account.</p>
         </div>
-        <Button type="submit" className="w-full" disabled={busy}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Send the link
-        </Button>
-      </form>
-    </Shell>
+
+        <form className="flex flex-col gap-4" onSubmit={forgotPassword}>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="label">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@business.com"
+              autoComplete="email"
+              className="input-field"
+              required
+            />
+          </div>
+
+          <button type="submit" disabled={!email.trim() || loading} className="btn-primary mt-2 center gap-2">
+            {loading && <Spinner size={16} color="#ffffff" />}
+            {loading ? "Sending" : "Send reset link"}
+          </button>
+        </form>
+
+        <p className="text-sm text-gray text-center">
+          Remember password?{" "}
+          <Link to="/signin" className="text-primary font-medium">
+            Login
+          </Link>
+        </p>
+      </div>
+    </AuthLayout>
   );
 }

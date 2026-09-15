@@ -1,8 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/Spinner";
 import BusinessDetails from "@/pages/BusinessDetails";
 import Forgot from "@/pages/Forgot";
 import Products from "@/pages/Products";
+import Reset from "@/pages/Reset";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/pages/Verify";
@@ -19,8 +20,8 @@ function RequireSession({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Spinner size={40} />
       </div>
     );
   }
@@ -36,6 +37,7 @@ export default function App() {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/forgot" element={<Forgot />} />
+      <Route path="/reset" element={<Reset />} />
       <Route
         path="/verify"
         element={

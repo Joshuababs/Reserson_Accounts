@@ -37,13 +37,57 @@ async function call<T>(method: string, path: string, body?: unknown, token?: str
 
   // The platform wraps successes in { message, data }. Unwrapping here keeps every
   // caller in this app dealing with the shape it actually wants.
-  const envelope = payload as { data?: T; message?: string } | null;
+  const envelope = payload as { data?: T; message?: string; error?: { message?: string } } | null;
 
   if (!res.ok) {
-    throw new ApiError(res.status, envelope?.message ?? "Something went wrong. Please try again.");
+    throw new ApiError(
+      res.status,
+      envelope?.error?.message ?? envelope?.message ?? "Something went wrong. Please try again.",
+    );
   }
 
   return (envelope?.data ?? payload) as T;
+}
+
+/**
+ * Same call, keeping the envelope's message.
+ *
+ * A few screens show the API's own wording back to the customer — the merchant
+ * dashboard does this after "forgot password" — so those calls need the message
+ * that `call` throws away.
+ */
+async function callWithMessage<T>(method: string, path: string, body?: unknown, token?: string): Promise<{ data: T; message: string | null }> {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    credentials: "include",
+    headers: {
+      "content-type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const text = await res.text();
+  let payload: unknown;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = text;
+  }
+
+  const envelope = payload as { data?: T; message?: string; error?: { message?: string } } | null;
+
+  if (!res.ok) {
+    throw new ApiError(
+      res.status,
+      envelope?.error?.message ?? envelope?.message ?? "Something went wrong. Please try again.",
+    );
+  }
+
+  const data = (envelope?.data ?? payload) as T;
+  const inner = data as { message?: unknown } | null;
+  const message = envelope?.message ?? (typeof inner?.message === "string" ? inner.message : null);
+  return { data, message };
 }
 
 export interface Product {
@@ -85,10 +129,20 @@ export const api = {
   verifyEmail: (code: string, token: string) => call<unknown>("POST", "/auth/verify-email", { code }, token),
   resendVerification: (token: string) => call<unknown>("POST", "/auth/resend-verification", {}, token),
   createBusiness: (
-    input: { businessName: string; currency: string; country: string; phoneNumber?: string; product: string },
+    input: {
+      businessName: string;
+      industry?: string;
+      currency: string;
+      country: string;
+      phoneNumber?: string;
+      address?: string;
+      product: string;
+    },
     token: string,
   ) => call<{ business: { id: string; name: string; slug: string } }>("POST", "/business/register", input, token),
   activateProduct: (code: string, businessId: string, token: string, makePrimary = false) =>
     call<unknown>("POST", `/identity/products/${code}/activate`, { businessId, makePrimary }, token),
-  forgotPassword: (email: string) => call<unknown>("POST", "/auth/forgot-password", { email }),
+  forgotPassword: (email: string) => callWithMessage<unknown>("POST", "/auth/forgot-password", { email }),
+  resetPassword: (input: { email: string; code: string; newPassword: string }) =>
+    callWithMessage<unknown>("POST", "/auth/reset-password", input),
 };

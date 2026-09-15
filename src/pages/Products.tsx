@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
-import { api, ApiError, type Me, type Product } from "@/api";
-import { Shell } from "@/components/Shell";
-import { Button } from "@/components/ui/button";
+import { CalendarDays, Check, LayoutGrid } from "lucide-react";
+import { api, type Me, type Product } from "@/api";
+import { AuthLayout } from "@/components/AuthLayout";
+import { Spinner } from "@/components/Spinner";
+import { errorMessage, useNotifications } from "@/components/notifications";
 import { useSession } from "@/session";
-import { cn } from "@/lib/utils";
 import { continueTo, withNext } from "@/lib/handoff";
+import { useTitle } from "@/lib/title";
 
 /**
  * What are you here for?
@@ -15,16 +16,17 @@ import { continueTo, withNext } from "@/lib/handoff";
  * so a third product appears here the day it is added and never needs a release of
  * this app. Choosing one activates it and hands off; the others stay one click away
  * afterwards, which is the difference between picking a product and being locked
- * into one.
+ * into one. Drawn like the merchant dashboard's "choose modules" cards.
  */
 export default function Products() {
+  useTitle("Choose product");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { me, token, refresh } = useSession();
+  const { toast } = useNotifications();
 
   const [products, setProducts] = useState<Product[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api.products().then(setProducts).catch(() => setProducts([]));
@@ -64,7 +66,6 @@ export default function Products() {
     }
 
     setBusy(product.code);
-    setError(null);
     try {
       let account: Me | null = me;
       if (!activated.has(product.code)) {
@@ -76,76 +77,86 @@ export default function Products() {
       // operator console survives the trip — and to the product itself otherwise.
       continueTo({ next: params.get("next"), product, me: account }, navigate);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "We couldn't open that product.");
+      toast({ type: "ERROR", msg: errorMessage(err, "We couldn't open that product."), duration: 10000 });
       setBusy(null);
     }
   };
 
-  return (
-    <Shell
-      title={business ? "Your Reservon products" : "What will you be using?"}
-      standfirst={
-        business
-          ? "Open one, or add another to this account — the business details carry over."
-          : "Pick the one you're here for. You can add the other later without signing up again."
-      }
-    >
-      {!products && (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        </div>
-      )}
+  const layoutProps = business ? { type: "others" as const, showLogout: true } : { currentStep: 3 };
 
-      <ul className="space-y-3">
-        {(products ?? []).map((product) => {
-          const isOn = activated.has(product.code);
-          return (
-            <li key={product.code}>
+  return (
+    <AuthLayout {...layoutProps}>
+      <div className="flex flex-col gap-6 w-full max-w-[600px]">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-[22px] md:text-3xl font-bold font-gabarito">
+            {business ? "Your Reservon products" : "What will you be using?"}
+          </h3>
+          <p className="text-sm text-gray">
+            {business
+              ? "Open one, or add another to this account — the business details carry over."
+              : "Pick the one you're here for. You can add the other later without signing up again."}
+          </p>
+        </div>
+
+        {!products && (
+          <div className="center py-8">
+            <Spinner size={32} />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4">
+          {(products ?? []).map((product) => {
+            const isOn = activated.has(product.code);
+            const Icon = product.code === "operator" ? LayoutGrid : CalendarDays;
+            return (
               <button
+                key={product.code}
                 type="button"
                 onClick={() => choose(product)}
                 disabled={busy !== null}
-                className={cn(
-                  "group flex w-full items-start justify-between gap-4 rounded-lg border p-5 text-left transition-colors",
-                  isOn ? "border-primary/40 bg-primary/[0.04]" : "border-border hover:border-primary/40",
-                )}
+                className={`flex items-center justify-between gap-4 rounded-xl border p-4 md:p-5 text-left transition-colors disabled:cursor-not-allowed ${
+                  isOn ? "border-primary bg-primary/5" : "border-[#D1D0D4] hover:border-primary"
+                }`}
               >
-                <span>
-                  <span className="flex items-center gap-2 font-medium text-foreground">
-                    {product.name}
-                    {isOn && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                        <Check className="h-3 w-3" />
-                        Active
-                      </span>
-                    )}
-                  </span>
-                  {product.tagline && (
-                    <span className="mt-1 block text-sm text-muted-foreground">{product.tagline}</span>
-                  )}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg center shrink-0 ${isOn ? "bg-primary" : "bg-[#E8E7E9]"}`}>
+                    <Icon size={18} strokeWidth={2.2} className={isOn ? "text-white" : "text-gray"} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-sm font-bold text-black flex items-center gap-2">
+                      {product.name}
+                      {isOn && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                          <Check size={12} strokeWidth={2.6} />
+                          Active
+                        </span>
+                      )}
+                    </p>
+                    {product.tagline && <p className="text-xs font-medium text-gray">{product.tagline}</p>}
+                  </div>
+                </div>
                 {busy === product.code ? (
-                  <Loader2 className="mt-1 h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+                  <Spinner size={20} />
                 ) : (
-                  <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                  <div className={`w-5 h-5 rounded-full border-2 center shrink-0 ${isOn ? "border-primary" : "border-[#D1D0D4]"}`}>
+                    {isOn && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                  </div>
                 )}
               </button>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </div>
 
-      {error && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-
-      {params.get("next") && (
-        <Button variant="ghost" className="mt-6 w-full" onClick={() => (window.location.href = params.get("next")!)}>
-          Back to where I was
-        </Button>
-      )}
-    </Shell>
+        {params.get("next") && (
+          <button
+            type="button"
+            className="btn-primary bg-primary/15 text-primary"
+            onClick={() => (window.location.href = params.get("next")!)}
+          >
+            Back to where I was
+          </button>
+        )}
+      </div>
+    </AuthLayout>
   );
 }
