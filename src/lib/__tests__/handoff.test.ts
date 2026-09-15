@@ -10,7 +10,7 @@ const me = (landing: string | null) => ({
 });
 
 beforeEach(() => {
-  vi.stubGlobal("window", { location: { origin: "https://accounts.reservonhq.com" } });
+  vi.stubGlobal("window", { location: { origin: "https://account.reservonhq.com" } });
 });
 
 describe("where a customer is sent afterwards", () => {

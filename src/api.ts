@@ -5,7 +5,17 @@
  * `credentials: "include"` — because the cookie *is* the sign-in, and the whole
  * point of this app is to be the one place it is created and destroyed.
  */
-const BASE = import.meta.env.VITE_IDENTITY_URL ?? "http://localhost:9040";
+/**
+ * The platform API's base URL. Every call this app makes goes to it: the identity
+ * endpoints under /identity and the account endpoints under /auth and /business.
+ * Production is the default so a stale .env degrades to correct; the old name
+ * VITE_IDENTITY_URL is still honoured.
+ */
+const BASE = (
+  import.meta.env.VITE_PLATFORM_API_URL ??
+  import.meta.env.VITE_IDENTITY_URL ??
+  (import.meta.env.PROD ? "https://api.reservonhq.com" : "http://localhost:9040")
+).replace(/\/+$/, "");
 
 export class ApiError extends Error {
   constructor(

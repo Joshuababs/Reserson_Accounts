@@ -11,8 +11,8 @@ npm run dev      # http://localhost:8097
 npm run build
 ```
 
-Needs the platform identity provider running: `reservon_backend` on :9040, which
-serves `/identity/*`. See `reservon_backend/docs/platform-identity.md` for the whole
+Needs the platform API running: `reservon_backend` on :9040, which serves
+`/identity/*` (`VITE_PLATFORM_API_URL`; production is the default). See `reservon_backend/docs/platform-identity.md` for the whole
 design.
 
 ## Why this is its own app
@@ -89,7 +89,7 @@ follows the same shape as the other Reservon repos. Configuration is `VITE_*` an
 inlined at build time — see `env.example` — so the container needs no runtime
 environment and a config change means a rebuild.
 
-The identity provider must be **same-site** with this app in production
-(`accounts.reservonhq.com` and `api.reservonhq.com` both sit under
+The platform API must be **same-site** with this app in production
+(`account.reservonhq.com` and `api.reservonhq.com` both sit under
 `reservonhq.com`), or the browser will not send the session cookie and every sign-in
 will appear to succeed and then not stick.
