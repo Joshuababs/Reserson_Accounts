@@ -16,24 +16,24 @@ beforeEach(() => {
 describe("where a customer is sent afterwards", () => {
   it("returns them to where they came from", () => {
     const target = returnTarget({
-      next: "https://console.reservonhq.com/bookings/123",
+      next: "https://operator.reservonhq.com/bookings/123",
       me: me(null),
     });
-    expect(target).toBe("https://console.reservonhq.com/bookings/123");
+    expect(target).toBe("https://operator.reservonhq.com/bookings/123");
   });
 
   it("keeps the deep link, not just the host", () => {
     const target = returnTarget({
-      next: "https://console.reservonhq.com/bookings/123?tab=today",
-      product: { code: "operator", appUrl: "https://console.reservonhq.com" },
+      next: "https://operator.reservonhq.com/bookings/123?tab=today",
+      product: { code: "operator", appUrl: "https://operator.reservonhq.com" },
       me: me(null),
     });
-    expect(target).toBe("https://console.reservonhq.com/bookings/123?tab=today");
+    expect(target).toBe("https://operator.reservonhq.com/bookings/123?tab=today");
   });
 
   it("falls back to their primary product when they came from nowhere", () => {
-    expect(returnTarget({ next: null, me: me("https://console.reservonhq.com") })).toBe(
-      "https://console.reservonhq.com",
+    expect(returnTarget({ next: null, me: me("https://operator.reservonhq.com") })).toBe(
+      "https://operator.reservonhq.com",
     );
   });
 
@@ -47,7 +47,7 @@ describe("where a customer is sent afterwards", () => {
    */
   it("ignores where they came from when they chose a different product", () => {
     const target = returnTarget({
-      next: "https://console.reservonhq.com/bookings",
+      next: "https://operator.reservonhq.com/bookings",
       product: { code: "merchant", appUrl: "https://app.reservonhq.com" },
       me: me(null),
     });
@@ -57,7 +57,7 @@ describe("where a customer is sent afterwards", () => {
 
 describe("the return-URL allowlist", () => {
   it("accepts Reservon hosts and their subdomains", () => {
-    expect(safeNext("https://console.reservonhq.com/x")).toBeTruthy();
+    expect(safeNext("https://operator.reservonhq.com/x")).toBeTruthy();
     expect(safeNext("https://app.reservonhq.com")).toBeTruthy();
     expect(safeNext("http://localhost:8095/dashboard")).toBeTruthy();
   });
