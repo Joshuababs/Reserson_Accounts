@@ -53,6 +53,10 @@ export default function Verify() {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
+  // Registration tells us when the provider refused the send; cleared as soon as
+  // a resend succeeds.
+  const [sendFailed, setSendFailed] = useState(params.get("sent") === "0");
+
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
   const formattedExpiry = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
@@ -87,6 +91,7 @@ export default function Verify() {
         msg: "A new verification code has been sent to your email",
       });
       setOtp("");
+      setSendFailed(false);
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       startExpiryCountdown();
     } catch (err) {
@@ -101,12 +106,26 @@ export default function Verify() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h3 className="text-[22px] md:text-3xl font-bold font-gabarito">Verify your email</h3>
-          <p className="text-sm text-gray">Enter the 6-digit code we just sent.</p>
+          <p className="text-sm text-gray">
+            {sendFailed ? "Enter the 6-digit code once it reaches you." : "Enter the 6-digit code we just sent."}
+          </p>
         </div>
 
-        <div className="rounded-lg bg-primary/10 text-primary text-sm font-semibold text-center py-3 px-4">
-          Sent to {me?.user.email || "your email"}
-        </div>
+        {sendFailed ? (
+          // The code exists; only the delivery failed. Saying "sent to …" here is
+          // what left a merchant watching an empty inbox, so this says the truth
+          // and points at the one button that can fix it.
+          <div className="rounded-lg bg-danger/10 text-danger text-sm py-3 px-4 text-center">
+            <span className="font-semibold">We couldn't send your code just now.</span>
+            <br />
+            Tap <span className="font-semibold">Resend code</span> below. If it still doesn't arrive, contact{" "}
+            <a href="mailto:support@reservonhq.com" className="underline">support@reservonhq.com</a>.
+          </div>
+        ) : (
+          <div className="rounded-lg bg-primary/10 text-primary text-sm font-semibold text-center py-3 px-4">
+            Sent to {me?.user.email || "your email"}
+          </div>
+        )}
 
         <OtpInput value={otp} onChange={setOtp} />
 

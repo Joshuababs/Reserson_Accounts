@@ -135,7 +135,12 @@ export const api = {
   exchange: () => call<{ access_token: string }>("POST", "/identity/sessions/exchange"),
   me: (token?: string) => call<Me>("GET", "/identity/me", undefined, token),
   register: (input: { firstName: string; lastName: string; email: string; password: string }) =>
-    call<{ access_token: string; user: { id: string; email: string } }>("POST", "/auth/register", input),
+    call<{
+      access_token: string;
+      user: { id: string; email: string };
+      /** False when the provider refused the code email; the verify screen says so. */
+      verificationEmailSent?: boolean;
+    }>("POST", "/auth/register", input),
   verifyEmail: (code: string, token: string) => call<unknown>("POST", "/auth/verify-email", { code }, token),
   resendVerification: (token: string) => call<unknown>("POST", "/auth/resend-verification", {}, token),
   createBusiness: (

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { Spinner } from "@/components/Spinner";
 import BusinessDetails from "@/pages/BusinessDetails";
 import Forgot from "@/pages/Forgot";
@@ -8,6 +8,7 @@ import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/pages/Verify";
 import { useSession } from "@/session";
+import { withNext } from "@/lib/handoff";
 
 /**
  * Everything past sign-in needs a session.
@@ -30,6 +31,33 @@ function RequireSession({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * The steps after verification, for an account that has verified.
+ *
+ * The API has always refused to register a business for an unverified account,
+ * so reaching these screens first only produced a 403 the person couldn't act
+ * on — and made it look as though the code step had been skipped. Now the flow
+ * goes back to the code, which is the one thing that unblocks them.
+ */
+function RequireVerified({ children }: { children: React.ReactNode }) {
+  const { me, loading } = useSession();
+  const [params] = useSearchParams();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Spinner size={40} />
+      </div>
+    );
+  }
+
+  if (!me) return <Navigate to="/signin" replace />;
+  if (!me.user.isEmailVerified) {
+    return <Navigate to={withNext("/verify", params.get("next"), params.get("product"))} replace />;
+  }
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -49,17 +77,17 @@ export default function App() {
       <Route
         path="/business"
         element={
-          <RequireSession>
+          <RequireVerified>
             <BusinessDetails />
-          </RequireSession>
+          </RequireVerified>
         }
       />
       <Route
         path="/products"
         element={
-          <RequireSession>
+          <RequireVerified>
             <Products />
-          </RequireSession>
+          </RequireVerified>
         }
       />
       <Route path="*" element={<Navigate to="/signin" replace />} />

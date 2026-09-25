@@ -58,7 +58,10 @@ export default function SignUp() {
       await api.signIn(email.trim(), password.trim()).catch(() => undefined);
       await refresh();
 
-      navigate(withNext("/verify", params.get("next"), params.get("product")));
+      // Carries a failed send through to the verify screen, so it can ask for a
+      // resend instead of telling them to check an inbox nothing was sent to.
+      const to = withNext("/verify", params.get("next"), params.get("product"));
+      navigate(result.verificationEmailSent === false ? `${to}${to.includes("?") ? "&" : "?"}sent=0` : to);
     } catch (err) {
       toast({ type: "ERROR", msg: errorMessage(err), duration: 10000 });
       setLoading(false);
