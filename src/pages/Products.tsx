@@ -8,6 +8,7 @@ import { errorMessage, useNotifications } from "@/components/notifications";
 import { useSession } from "@/session";
 import { continueTo, withNext } from "@/lib/handoff";
 import { useTitle } from "@/lib/title";
+import { productCopy } from "@/lib/product-copy";
 
 /**
  * What are you here for?
@@ -86,7 +87,7 @@ export default function Products() {
 
   return (
     <AuthLayout {...layoutProps}>
-      <div className="flex flex-col gap-6 w-full max-w-[600px]">
+      <div className="flex flex-col gap-6 w-full max-w-[760px]">
         <div className="flex flex-col gap-1">
           <h3 className="text-[22px] md:text-3xl font-bold font-gabarito">
             {business ? "Your Reservon products" : "What will you be using?"}
@@ -104,44 +105,70 @@ export default function Products() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-4">
+        {/*
+          Two columns from `sm` up, because the choice is a comparison.
+
+          These used to be single-line rows carrying a name and a tagline, which
+          is enough to identify a product you already know and not enough to pick
+          between two you don't. The audience line does most of the work: a salon
+          owner and a sauna owner should each recognise themselves on sight.
+        */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {(products ?? []).map((product) => {
             const isOn = activated.has(product.code);
             const Icon = product.code === "operator" ? LayoutGrid : CalendarDays;
+            const copy = productCopy(product);
             return (
               <button
                 key={product.code}
                 type="button"
                 onClick={() => choose(product)}
                 disabled={busy !== null}
-                className={`flex items-center justify-between gap-4 rounded-xl border p-4 md:p-5 text-left transition-colors disabled:cursor-not-allowed ${
+                className={`flex flex-col gap-3 rounded-xl border p-4 md:p-5 text-left transition-colors disabled:cursor-not-allowed ${
                   isOn ? "border-primary bg-primary/5" : "border-[#D1D0D4] hover:border-primary"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start justify-between gap-3">
                   <div className={`w-10 h-10 rounded-lg center shrink-0 ${isOn ? "bg-primary" : "bg-[#E8E7E9]"}`}>
                     <Icon size={18} strokeWidth={2.2} className={isOn ? "text-white" : "text-gray"} />
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-bold text-black flex items-center gap-2">
-                      {product.name}
-                      {isOn && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                          <Check size={12} strokeWidth={2.6} />
-                          Active
-                        </span>
-                      )}
-                    </p>
-                    {product.tagline && <p className="text-xs font-medium text-gray">{product.tagline}</p>}
-                  </div>
+                  {busy === product.code ? (
+                    <Spinner size={20} />
+                  ) : isOn ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                      <Check size={12} strokeWidth={2.6} />
+                      Active
+                    </span>
+                  ) : null}
                 </div>
-                {busy === product.code ? (
-                  <Spinner size={20} />
-                ) : (
-                  <div className={`w-5 h-5 rounded-full border-2 center shrink-0 ${isOn ? "border-primary" : "border-[#D1D0D4]"}`}>
-                    {isOn && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                  </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-lg font-bold text-black font-gabarito">{copy.name}</p>
+                  {copy.badge && (
+                    <span className="self-start rounded-full bg-[#F1F0F3] px-2 py-0.5 text-[11px] font-medium text-gray">
+                      {copy.badge}
+                    </span>
+                  )}
+                  {copy.audience && (
+                    <p className="text-xs font-semibold text-black">{copy.audience}</p>
+                  )}
+                  {copy.description && <p className="text-sm text-gray">{copy.description}</p>}
+                </div>
+
+                {copy.highlights.length > 0 && (
+                  <ul className="flex flex-col gap-1.5">
+                    {copy.highlights.map((point) => (
+                      <li key={point} className="flex items-start gap-2 text-xs text-gray">
+                        <span className="mt-[5px] w-1 h-1 rounded-full bg-primary shrink-0" aria-hidden />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
                 )}
+
+                <span className="mt-auto pt-1 text-sm font-semibold text-primary">
+                  {isOn ? "Open" : "Choose"} {copy.name.toLowerCase()} →
+                </span>
               </button>
             );
           })}

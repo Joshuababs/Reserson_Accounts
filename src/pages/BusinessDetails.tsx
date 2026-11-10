@@ -126,7 +126,7 @@ export default function BusinessDetails() {
               type="text"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              placeholder="e.g. Joshua Consulting"
+              placeholder={product === "operator" ? "e.g. Smiths Gym" : "e.g. Aoife Wellness"}
               className="input-field"
               required
             />
