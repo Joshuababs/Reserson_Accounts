@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "@/api";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Spinner } from "@/components/Spinner";
@@ -15,8 +15,10 @@ export default function Reset() {
   const navigate = useNavigate();
   const { toast, alert } = useNotifications();
 
-  const [code, setCode] = useState("");
-  const [email, setEmail] = useState("");
+  // The emailed link carries both, so only the new password is left to type.
+  const [params] = useSearchParams();
+  const [code, setCode] = useState(() => params.get("code") ?? "");
+  const [email, setEmail] = useState(() => params.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [cPassword, setCPassword] = useState("");
   const [loading, setLoading] = useState(false);
